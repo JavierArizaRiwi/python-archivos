@@ -1,7 +1,20 @@
 [
   {
-    "id": "juan",
-    "nombre": "JUan",
-    "edad": "23"
+    "id": "pedro",
+    "nombre": "Pedro",
+    "edad": "20",
+    "role": {
+      "id": 1,
+      "name": "Admin"
+    }
+  },
+  {
+    "id": "marta",
+    "nombre": "Marta",
+    "edad": "22",
+    "role": {
+      "id": 1,
+      "name": "Admin"
+    }
   }
 ]

@@ -12,7 +12,9 @@ def menu():
 def pedir_datos():
     nombre = input("Nombre: ")
     edad = input("Edad: ")
-    return {"id": nombre.lower(), "nombre": nombre, "edad": edad}
+    role= input("ingresa el Rol")
+    
+    return {"id": nombre.lower(), "nombre": nombre, "edad": edad , "role":{"id":1,"name":role}}
 
 if __name__ == "__main__":
     while True:

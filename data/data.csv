@@ -1,0 +1,3 @@
+id,nombre,edad,role
+paula,Paula,22,"{'id': 1, 'name': 'Cliente'}"
+juan,Juan,25,"{'id': 1, 'name': 'Admin'}"
