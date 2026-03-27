@@ -1,62 +1,113 @@
 from crud import *
 
-def menu():
-    print("\n--- CRUD Archivos (CSV/JSON) ---")
+
+def mostrar_menu():
+    print("\n--- CRUD de Archivos (CSV / JSON) ---")
     print("1. Crear registro")
     print("2. Leer registros")
     print("3. Actualizar registro")
     print("4. Eliminar registro")
     print("5. Salir")
-    print("------------------------------")
+
 
 def pedir_datos():
-    nombre = input("Nombre: ")
-    edad = input("Edad: ")
-    role= input("ingresa el Rol")
-    
-    return {"id": nombre.lower(), "nombre": nombre, "edad": edad , "role":{"id":1,"name":role}}
+    nombre = input("Ingrese el nombre: ")
+    edad = input("Ingrese la edad: ")
+    rol = input("Ingrese el rol: ")
+
+    return {
+        "id": nombre.lower(),
+        "nombre": nombre,
+        "edad": edad,
+        "role": {
+            "id": 1,
+            "name": rol
+        }
+    }
+
+
+def pedir_tipo_archivo(mensaje):
+    print(mensaje)
+    print("1. CSV")
+    print("2. JSON")
+    return input("Seleccione una opción: ")
+
 
 if __name__ == "__main__":
-    while True:
-        menu()
-        op = input("Elige una opción: ")
-        if op == '1':
+    opcion = ""
+
+    while opcion != "5":
+        mostrar_menu()
+        opcion = input("Elige una opción: ")
+
+        if opcion == "1":
             datos = pedir_datos()
-            tipo = input("¿Guardar en (1) CSV o (2) JSON?: ")
-            if tipo == '1':
+            tipo = pedir_tipo_archivo("¿Dónde deseas guardar el registro?")
+
+            if tipo == "1":
                 crear_registro_csv(datos)
                 print("Registro guardado en CSV.")
-            else:
+            elif tipo == "2":
                 crear_registro_json(datos)
                 print("Registro guardado en JSON.")
-        elif op == '2':
-            tipo = input("¿Leer de (1) CSV o (2) JSON?: ")
-            if tipo == '1':
+            else:
+                print("Tipo de archivo no válido.")
+
+        elif opcion == "2":
+            tipo = pedir_tipo_archivo("¿Desde dónde deseas leer los registros?")
+
+            if tipo == "1":
                 registros = leer_registros_csv()
-            else:
+            elif tipo == "2":
                 registros = leer_registros_json()
-            print("\nRegistros:")
-            for r in registros:
-                print(r)
-        elif op == '3':
-            id_valor = input("ID del registro a actualizar: ")
-            nuevos = pedir_datos()
-            tipo = input("¿Actualizar en (1) CSV o (2) JSON?: ")
-            if tipo == '1':
-                ok = actualizar_registro_csv(id_valor, 'id', nuevos)
             else:
-                ok = actualizar_registro_json(id_valor, 'id', nuevos)
-            print("Actualizado." if ok else "No encontrado.")
-        elif op == '4':
-            id_valor = input("ID del registro a eliminar: ")
-            tipo = input("¿Eliminar en (1) CSV o (2) JSON?: ")
-            if tipo == '1':
-                ok = eliminar_registro_csv(id_valor, 'id')
+                print("Tipo de archivo no válido.")
+                registros = []
+
+            print("\n--- Registros encontrados ---")
+            if len(registros) == 0:
+                print("No hay registros guardados.")
             else:
-                ok = eliminar_registro_json(id_valor, 'id')
-            print("Eliminado." if ok else "No encontrado.")
-        elif op == '5':
+                for registro in registros:
+                    print(registro)
+
+        elif opcion == "3":
+            id_valor = input("Ingrese el ID del registro a actualizar: ")
+            nuevos_datos = pedir_datos()
+            tipo = pedir_tipo_archivo("¿En qué archivo deseas actualizar el registro?")
+
+            if tipo == "1":
+                actualizado = actualizar_registro_csv(id_valor, "id", nuevos_datos)
+            elif tipo == "2":
+                actualizado = actualizar_registro_json(id_valor, "id", nuevos_datos)
+            else:
+                actualizado = False
+                print("Tipo de archivo no válido.")
+
+            if actualizado:
+                print("Registro actualizado correctamente.")
+            else:
+                print("No se encontró el registro.")
+
+        elif opcion == "4":
+            id_valor = input("Ingrese el ID del registro a eliminar: ")
+            tipo = pedir_tipo_archivo("¿De qué archivo deseas eliminar el registro?")
+
+            if tipo == "1":
+                eliminado = eliminar_registro_csv(id_valor, "id")
+            elif tipo == "2":
+                eliminado = eliminar_registro_json(id_valor, "id")
+            else:
+                eliminado = False
+                print("Tipo de archivo no válido.")
+
+            if eliminado:
+                print("Registro eliminado correctamente.")
+            else:
+                print("No se encontró el registro.")
+
+        elif opcion == "5":
             print("¡Hasta luego!")
-            break
+
         else:
-            print("Opción inválida.")
+            print("Opción inválida. Intenta de nuevo.")

@@ -1,154 +1,118 @@
-import csv  # Módulo estándar para manejo de archivos CSV (texto separado por comas)
-import json  # Módulo estándar para manejo de archivos JSON (texto estructurado tipo diccionario)
-import os    # Módulo estándar para operaciones del sistema de archivos (rutas, existencia, etc)
+import csv  # Esto sirve para trabajar con archivos tipo Excel (CSV)
+import json  # Esto sirve para trabajar con archivos tipo texto ordenado (JSON)
+import os    # Esto sirve para manejar carpetas y archivos en la compu
 
-# Rutas absolutas (relativas al proyecto) donde se guardarán los archivos de datos
-# El archivo CSV se guardará en la carpeta 'data' con el nombre 'data.csv'
-DATA_CSV = os.path.join('data', 'data.csv')    # Ejemplo de ruta: 'data/data.csv'
-# El archivo JSON se guardará en la carpeta 'data' con el nombre 'data.json'
-DATA_JSON = os.path.join('data', 'data.json')  # Ejemplo de ruta: 'data/data.json'
+# Aquí decimos dónde se van a guardar los archivos de datos
+CARPETA_DATA = "data"  # Carpeta donde van los archivos
+ARCHIVO_CSV = os.path.join(CARPETA_DATA, "data.csv")  # Archivo para guardar en formato tabla
+ARCHIVO_JSON = os.path.join(CARPETA_DATA, "data.json")  # Archivo para guardar en formato lista
 
+# Esta función revisa si la carpeta existe. Si no existe, la crea.
+def crear_carpeta_si_no_existe():
+    if not os.path.exists(CARPETA_DATA):
+        os.makedirs(CARPETA_DATA)
 
-# =============================
-# Funciones CRUD para archivos CSV
-# =============================
+# ========== PARTE DE JSON ==========
+# JSON es como una caja donde guardamos muchos papelitos (diccionarios)
+# Cada papelito tiene información de una persona, por ejemplo.
 
-def crear_registro_csv(diccionario):
-    """
-    Crea (si no existe) o agrega un registro al archivo CSV ubicado en la ruta DATA_CSV.
-    Si el archivo no existe, lo crea y escribe la cabecera (los nombres de los campos).
-    Si ya existe, solo agrega el nuevo registro al final.
-    Parámetro:
-        diccionario: dict con los datos del registro (las claves serán las columnas)
-    """
-    existe = os.path.isfile(DATA_CSV)  # Verifica si el archivo ya existe en la ruta
-    with open(DATA_CSV, 'a', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=diccionario.keys())
-        if not existe:
-            writer.writeheader()  # Si el archivo es nuevo, escribe la cabecera (primera línea)
-        writer.writerow(diccionario)  # Escribe el registro como una nueva fila
+def leer_registros_json():
+    # Lee todos los papelitos de la caja (archivo JSON)
+    if not os.path.exists(ARCHIVO_JSON):
+        return []  # Si la caja no existe, regresamos una caja vacía
+    with open(ARCHIVO_JSON, "r", encoding="utf-8") as archivo:
+        return json.load(archivo)
+
+def guardar_registros_json(registros):
+    # Guarda todos los papelitos en la caja (archivo JSON)
+    crear_carpeta_si_no_existe()  # Asegúrate de que la caja existe
+    with open(ARCHIVO_JSON, "w", encoding="utf-8") as archivo:
+        json.dump(registros, archivo, ensure_ascii=False, indent=4)
+
+def crear_registro_json(registro):
+    # Agrega un nuevo papelito a la caja
+    registros = leer_registros_json()  # Saca todos los papelitos
+    registros.append(registro)         # Mete el nuevo papelito
+    guardar_registros_json(registros)  # Guarda la caja de nuevo
+
+def actualizar_registro_json(id_valor, campo_id, nuevos_datos):
+    # Busca un papelito por su nombre (o lo que le digas) y lo cambia
+    registros = leer_registros_json()
+    for registro in registros:
+        if registro.get(campo_id) == id_valor:
+            registro.update(nuevos_datos)  # Cambia los datos del papelito
+            guardar_registros_json(registros)  # Guarda la caja de nuevo
+            return True  # Sí lo encontró y lo cambió
+    return False  # No encontró ningún papelito con ese nombre
+
+def eliminar_registro_json(id_valor, campo_id):
+    # Saca un papelito de la caja si coincide con el nombre (o lo que le digas)
+    registros = leer_registros_json()
+    nuevos_registros = []
+    eliminado = False
+    for registro in registros:
+        if registro.get(campo_id) == id_valor:
+            eliminado = True  # Encontró el papelito y no lo mete de nuevo
+        else:
+            nuevos_registros.append(registro)  # Mete los demás papelitos
+    if eliminado:
+        guardar_registros_json(nuevos_registros)  # Guarda la caja sin ese papelito
+    return eliminado
+
+# ========== PARTE DE CSV ==========
+# CSV es como una hoja de cálculo (tipo Excel) donde cada fila es una persona
 
 def leer_registros_csv():
-    """
-    Lee todos los registros del archivo CSV ubicado en la ruta DATA_CSV.
-    Si el archivo no existe, retorna una lista vacía.
-    Retorna:
-        Lista de diccionarios, cada uno representa un registro/una fila del archivo CSV.
-    """
-    if not os.path.isfile(DATA_CSV):
-        return []  # Si el archivo no existe, retorna lista vacía
-    with open(DATA_CSV, 'r', newline='', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        return list(reader)  # Convierte el lector en una lista de diccionarios
+    # Lee todas las filas de la hoja (archivo CSV)
+    if not os.path.exists(ARCHIVO_CSV):
+        return []  # Si la hoja no existe, regresamos una hoja vacía
+    with open(ARCHIVO_CSV, "r", newline="", encoding="utf-8") as archivo:
+        lector = csv.DictReader(archivo)
+        return list(lector)
+
+def crear_registro_csv(registro):
+    # Agrega una nueva fila a la hoja (archivo CSV)
+    crear_carpeta_si_no_existe()  # Asegúrate de que la hoja existe
+    archivo_existe = os.path.exists(ARCHIVO_CSV)
+    with open(ARCHIVO_CSV, "a", newline="", encoding="utf-8") as archivo:
+        escritor = csv.DictWriter(archivo, fieldnames=registro.keys())
+        if not archivo_existe:
+            escritor.writeheader()  # Si es la primera vez, escribe los títulos de las columnas
+        escritor.writerow(registro)  # Escribe la nueva fila
 
 def actualizar_registro_csv(id_valor, campo_id, nuevos_datos):
-    """
-    Busca y actualiza un registro en el archivo CSV (ruta DATA_CSV) según el valor de un campo identificador.
-    Parámetros:
-        id_valor: valor a buscar en el campo identificador (por ejemplo, 'id')
-        campo_id: nombre del campo identificador (por ejemplo, 'id')
-        nuevos_datos: diccionario con los nuevos datos para actualizar ese registro
-    Retorna:
-        True si se actualizó algún registro, False si no se encontró.
-    """
-    registros = leer_registros_csv()  # Lee todos los registros actuales
+    # Busca una fila por su nombre (o lo que le digas) y la cambia
+    registros = leer_registros_csv()
+    if len(registros) == 0:
+        return False  # Si no hay filas, no hay nada que cambiar
     actualizado = False
-    for reg in registros:
-        if reg[campo_id] == id_valor:
-            reg.update(nuevos_datos)  # Actualiza los datos del registro encontrado
+    for registro in registros:
+        if registro.get(campo_id) == id_valor:
+            registro.update(nuevos_datos)  # Cambia los datos de la fila
             actualizado = True
+            break
     if actualizado:
-        # Sobrescribe el archivo con todos los registros (incluyendo el actualizado)
-        with open(DATA_CSV, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=registros[0].keys())
-            writer.writeheader()
-            writer.writerows(registros)
-            
+        with open(ARCHIVO_CSV, "w", newline="", encoding="utf-8") as archivo:
+            escritor = csv.DictWriter(archivo, fieldnames=registros[0].keys())
+            escritor.writeheader()
+            escritor.writerows(registros)  # Escribe todas las filas de nuevo
     return actualizado
 
 def eliminar_registro_csv(id_valor, campo_id):
-    """
-    Elimina un registro del archivo CSV (ruta DATA_CSV) según el valor de un campo identificador.
-    Parámetros:
-        id_valor: valor a buscar en el campo identificador
-        campo_id: nombre del campo identificador
-    Retorna:
-        True si se eliminó algún registro, False si no se encontró.
-    """
+    # Saca una fila de la hoja si coincide con el nombre (o lo que le digas)
     registros = leer_registros_csv()
-    nuevos = [reg for reg in registros if reg[campo_id] != id_valor]  # Filtra el registro a eliminar
-    if len(nuevos) != len(registros):
-        # Si se eliminó algún registro, sobrescribe el archivo con los registros restantes
-        with open(DATA_CSV, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=registros[0].keys())
-            writer.writeheader()
-            writer.writerows(nuevos)
-        return True
-    return False
-
-# =============================
-# Funciones CRUD para archivos JSON
-# =============================
-
-def crear_registro_json(diccionario):
-    """
-    Crea (si no existe) o agrega un registro al archivo JSON ubicado en la ruta DATA_JSON.
-    Si el archivo no existe, lo crea como una lista con el primer registro.
-    Si ya existe, agrega el nuevo registro al final de la lista.
-    Parámetro:
-        diccionario: dict con los datos del registro
-    """
-    registros = leer_registros_json()  # Lee los registros existentes (o lista vacía)
-    registros.append(diccionario)      # Agrega el nuevo registro
-    with open(DATA_JSON, 'w', encoding='utf-8') as f:
-        json.dump(registros, f, ensure_ascii=False, indent=2)  # Guarda la lista actualizada
-
-def leer_registros_json():
-    """
-    Lee todos los registros del archivo JSON ubicado en la ruta DATA_JSON.
-    Si el archivo no existe, retorna una lista vacía.
-    Retorna:
-        Lista de diccionarios, cada uno representa un registro.
-    """
-    if not os.path.isfile(DATA_JSON):
-        return []  # Si el archivo no existe, retorna lista vacía
-    with open(DATA_JSON, 'r', encoding='utf-8') as f:
-        return json.load(f)  # Carga la lista de registros desde el archivo JSON
-
-def actualizar_registro_json(id_valor, campo_id, nuevos_datos):
-    """
-    Busca y actualiza un registro en el archivo JSON (ruta DATA_JSON) según el valor de un campo identificador.
-    Parámetros:
-        id_valor: valor a buscar en el campo identificador
-        campo_id: nombre del campo identificador
-        nuevos_datos: diccionario con los nuevos datos para actualizar ese registro
-    Retorna:
-        True si se actualizó algún registro, False si no se encontró.
-    """
-    registros = leer_registros_json()
-    actualizado = False
-    for reg in registros:
-        if reg[campo_id] == id_valor:
-            reg.update(nuevos_datos)  # Actualiza los datos del registro encontrado
-            actualizado = True
-    if actualizado:
-        with open(DATA_JSON, 'w', encoding='utf-8') as f:
-            json.dump(registros, f, ensure_ascii=False, indent=2)
-    return actualizado
-
-def eliminar_registro_json(id_valor, campo_id):
-    """
-    Elimina un registro del archivo JSON (ruta DATA_JSON) según el valor de un campo identificador.
-    Parámetros:
-        id_valor: valor a buscar en el campo identificador
-        campo_id: nombre del campo identificador
-    Retorna:
-        True si se eliminó algún registro, False si no se encontró.
-    """
-    registros = leer_registros_json()
-    nuevos = [reg for reg in registros if reg[campo_id] != id_valor]  # Filtra el registro a eliminar
-    if len(nuevos) != len(registros):
-        with open(DATA_JSON, 'w', encoding='utf-8') as f:
-            json.dump(nuevos, f, ensure_ascii=False, indent=2)
-        return True
-    return False
+    if len(registros) == 0:
+        return False  # Si no hay filas, no hay nada que borrar
+    nuevos_registros = []
+    eliminado = False
+    for registro in registros:
+        if registro.get(campo_id) == id_valor:
+            eliminado = True  # Encontró la fila y no la mete de nuevo
+        else:
+            nuevos_registros.append(registro)  # Mete las demás filas
+    if eliminado:
+        with open(ARCHIVO_CSV, "w", newline="", encoding="utf-8") as archivo:
+            escritor = csv.DictWriter(archivo, fieldnames=registros[0].keys())
+            escritor.writeheader()
+            escritor.writerows(nuevos_registros)  # Escribe todas las filas menos la borrada
+    return eliminado
