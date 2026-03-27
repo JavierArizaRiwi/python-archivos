@@ -21,7 +21,7 @@ Sigue las instrucciones en pantalla para gestionar los registros.
 
 ---
 
-## Explicación de instrucciones importantes (¡como para niños!)
+## Explicación de instrucciones importantes
 
 ### os.path.join(carpeta, archivo)
 Sirve para juntar el nombre de una carpeta y el de un archivo, así la compu sabe exactamente dónde está guardado el archivo. Es como decir: “Busca el cuaderno dentro de la caja”.
